@@ -1,6 +1,7 @@
+const canvas = document.getElementById("canvas");
+
 function start() {
   let k = 12;
-  const canvas = document.getElementById("canvas");
   if (canvas.getContext) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -16,15 +17,14 @@ function start() {
     });
   }
 }
-start();
 
-// k - how many curves
-function drawRoseCurves(k) {
+function drawRoseCurves(k) { // k - how many leafs
   let step = 0.01;
   let size = 150;
 
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
+
   const ctx = canvas.getContext("2d");
 
   ctx.beginPath();
