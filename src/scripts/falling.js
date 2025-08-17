@@ -10,10 +10,6 @@ for (let i = 0; i < rows - 1; i++) {
 }
 matrix[rows - 1] = new Array(cols).fill(1);
 
-console.log("Matrix:");
-console.log(matrix.length);
-console.log(matrix[5].length);
-
 let res = "";
 showMatrix();
 
@@ -22,9 +18,9 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const ctx = canvas.getContext("2d");
 
-function start() {
-  let toWaitMs = 16.666;
+const toWaitMs = 1216.666;
 
+function start() {
   if (canvas.getContext) {
     drawTable();
 
@@ -37,7 +33,7 @@ function start() {
     drawTable();
 
     canvas.addEventListener("click", function (evt) {
-      placeSandcorn(evt);
+      putSandcornInMatrix(evt);
     });
   } else {
     throw new Error("no context => canvas is not available in this browser");
@@ -95,25 +91,48 @@ function toggleScrollbars() {
   }
 }
 
-function placeSandcorn(evt) {
+function putSandcornInMatrix(evt) {
   var rect = canvas.getBoundingClientRect();
   var pos = {
     col: Math.floor((evt.clientX - rect.left) / sqrSize),
     row: Math.floor((evt.clientY - rect.top) / sqrSize),
   };
   if (matrix[pos.row][pos.col] == 0) {
-    leftPx = pos.col * sqrSize;
-    topPx = pos.row * sqrSize;
-    ctx.fillRect(leftPx, topPx, sqrSize, sqrSize);
     matrix[pos.row][pos.col] = 1;
+    drawSandcorn(pos.row, pos.col);
     showMatrix();
     fallCheck(pos.row, pos.col);
   }
 }
 
+function drawSandcorn(row, col) {
+  leftPx = col * sqrSize;
+  topPx = row * sqrSize;
+  ctx.fillRect(leftPx, topPx, sqrSize, sqrSize);
+  showMatrix();
+}
+
 function fallCheck(row, col) {
-  if (matrix[row - 1][col] == 0) {
-    matrix[row][col] = 0;
-    matrix[row - 1][col] = 1;
+  let newRow = row + 1;
+  if (newRow < rows) {
+    if (matrix[newRow][col] == 0) {
+      matrix[row][col] = 0;
+      matrix[newRow][col] = 1;
+      setTimeout(() => {
+        ctx.clearRect(col * sqrSize, row * sqrSize, sqrSize, sqrSize);
+        drawEverySandcorn();
+        fallCheck(newRow, col);
+      }, toWaitMs);
+    }
+  }
+}
+
+function drawEverySandcorn() {
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      if (matrix[i][j] == 1) {
+        drawSandcorn(i, j);
+      }
+    }
   }
 }
