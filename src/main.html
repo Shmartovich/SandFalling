@@ -1,12 +1,19 @@
 <html>
-  <head> </head>
-  <title>Testing canvas</title>
+  <head>
+    <title>Testing canvas</title>
+    <link rel="stylesheet" href="styles/matrix.css" />
+  </head>
 
   <body>
+    <div style="position: relative; width: 100%; height: 100%">
+      <canvas
+        id="canvasBackground"
+        style="position: absolute; left: 0; top: 0"
+      ></canvas>
+      <canvas id="canvas" style="position: absolute; left: 0; top: 0"></canvas>
+    </div>
+    <div id="matrix-info" class="matrix-info"></div>
     <button id="btn-toggle-scrollbars">Toggle Scrollbars</button>
-    <canvas id="canvas"> </canvas>
-
-    <div id="information">asdfadsf</div>
     <script src="scripts/falling.js"></script>
   </body>
 </html>

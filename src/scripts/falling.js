@@ -1,40 +1,52 @@
 let scrollbarsHidden = false;
 
-const sqrSize = 50;
+const tableLineWidth = 1;
+const sqrSize = 10;
 const rows = Math.floor(window.innerHeight / sqrSize);
 const cols = Math.floor(window.innerWidth / sqrSize);
-const matrix = new Array(rows);
-for (let i = 0; i < rows - 1; i++) {
+let matrix = new Array(rows);
+for (let i = 0; i < rows; i++) {
   let array = new Array(cols).fill(0);
   matrix[i] = array;
 }
-matrix[rows - 1] = new Array(cols).fill(1);
-
-let res = "";
-showMatrix();
+let newMatrix = new Array(rows);
+for (let i = 0; i < rows; i++) {
+  let array = new Array(cols).fill(0);
+  newMatrix[i] = array;
+}
 
 const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const ctx = canvas.getContext("2d");
 
-const toWaitMs = 1216.666;
+const canvasBG = document.getElementById("canvasBackground");
+const ctxBG = canvasBG.getContext("2d");
+canvasBG.width = window.innerWidth;
+canvasBG.height = window.innerHeight;
+
+const toWaitMs = 256;
 
 function start() {
   if (canvas.getContext) {
-    drawTable();
-
+    var isHolding = false;
     window.addEventListener("resize", resizeCanvas);
-
     const btn = document.getElementById("btn-toggle-scrollbars");
-
     btn.addEventListener("click", toggleScrollbars);
-
-    drawTable();
-
-    canvas.addEventListener("click", function (evt) {
+    canvas.addEventListener("mousedown", function (evt) {
+      isHolding = true;
       putSandcornInMatrix(evt);
     });
+    canvas.addEventListener("mouseup", function (evt) {
+      isHolding = false;
+    });
+    canvas.addEventListener("mousemove", function (evt) {
+      if (isHolding) {
+        putSandcornInMatrix(evt);
+      }
+    });
+    drawInit();
+    animate();
   } else {
     throw new Error("no context => canvas is not available in this browser");
   }
@@ -42,31 +54,48 @@ function start() {
 
 start();
 
+function drawInit() {
+  drawTable();
+  drawEverySandcorn();
+}
+
 function showMatrix() {
+  let textMatrix = document.getElementById("matrix-info");
+  let res = "";
+  res += "-".repeat(cols);
+  res += "<br>";
   for (let row = 0; row < matrix.length; row++) {
     for (let col = 0; col < matrix[row].length; col++) {
       res += matrix[row][col];
     }
-    console.log(res);
-    res = "";
+    res += "<br>";
   }
+  res += "-".repeat(cols);
+  res += "<br>";
+
+  textMatrix.innerHTML = res;
 }
 
 function drawTable() {
-  ctx.strokeStyle = "red";
-  ctx.beginPath();
+  canvasBG.width = window.innerWidth;
+  canvasBG.height = window.innerHeight;
+  // todo resize
+  ctxBG.lineWidth = tableLineWidth;
+  ctxBG.strokeStyle = "black";
 
-  // horizont
-  for (let i = 0; i <= canvas.height; i += sqrSize) {
-    ctx.moveTo(0, i);
-    ctx.lineTo(canvas.width, i);
+  for (let row = 0; row <= rows; row++) {
+    ctxBG.beginPath();
+    ctxBG.moveTo(0, row * sqrSize);
+    ctxBG.lineTo(cols * sqrSize, row * sqrSize);
+    ctxBG.stroke();
   }
-  // vertical
-  for (let i = 0; i <= canvas.width; i += sqrSize) {
-    ctx.moveTo(i, 0);
-    ctx.lineTo(i, canvas.height);
+
+  for (let col = 0; col <= cols; col++) {
+    ctxBG.beginPath();
+    ctxBG.moveTo(col * sqrSize, 0);
+    ctxBG.lineTo(col * sqrSize, rows * sqrSize);
+    ctxBG.stroke();
   }
-  ctx.stroke();
 }
 
 function resizeCanvas() {
@@ -77,8 +106,7 @@ function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
   }
-
-  drawTable(ctx, sqrSize);
+  drawInit();
   // drawAll table, sandcorns, use matrix
 }
 function toggleScrollbars() {
@@ -99,9 +127,8 @@ function putSandcornInMatrix(evt) {
   };
   if (matrix[pos.row][pos.col] == 0) {
     matrix[pos.row][pos.col] = 1;
-    drawSandcorn(pos.row, pos.col);
     showMatrix();
-    fallCheck(pos.row, pos.col);
+    updatePhysics();
   }
 }
 
@@ -109,30 +136,47 @@ function drawSandcorn(row, col) {
   leftPx = col * sqrSize;
   topPx = row * sqrSize;
   ctx.fillRect(leftPx, topPx, sqrSize, sqrSize);
-  showMatrix();
 }
 
-function fallCheck(row, col) {
-  let newRow = row + 1;
-  if (newRow < rows) {
-    if (matrix[newRow][col] == 0) {
-      matrix[row][col] = 0;
-      matrix[newRow][col] = 1;
-      setTimeout(() => {
-        ctx.clearRect(col * sqrSize, row * sqrSize, sqrSize, sqrSize);
-        drawEverySandcorn();
-        fallCheck(newRow, col);
-      }, toWaitMs);
+function updatePhysics() {
+  // bottom -> top
+  for (let row = rows - 2; row >= 0; row--) {
+    let rowUnder = row + 1;
+    let colLeft = col - 1;
+    let colRight = col + 1;
+    for (let col = 0; col < cols; col++) {
+      if (matrix[row][col] == 1) {
+        if (matrix[rowUnder][col] == 0) {
+          updateParticle(row, col);
+        } else if (matrix[rowUnder][colLeft] == 0) {
+          updateParticle(row, colLeft);
+        } else if (matrix[rowUnder][colRight] == 0) {
+          updateParticle(row, colRight);
+        }
+      }
     }
   }
+  matrix = newMatrix;
+}
+
+function updateParticle(row, col) {
+  newMatrix[row][col] = 0;
+  newMatrix[row + 1][col] = 1;
 }
 
 function drawEverySandcorn() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      if (matrix[i][j] == 1) {
+      if (newMatrix[i][j] == 1) {
         drawSandcorn(i, j);
       }
     }
   }
+}
+
+function animate() {
+  updatePhysics();
+  drawEverySandcorn();
+  requestAnimationFrame(() => this.animate());
 }
