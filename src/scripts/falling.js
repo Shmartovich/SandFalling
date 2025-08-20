@@ -2,8 +2,12 @@ let scrollbarsHidden = false;
 
 const tableLineWidth = 1;
 const sqrSize = 10;
-const rows = Math.floor(window.innerHeight / sqrSize);
-const cols = Math.floor(window.innerWidth / sqrSize);
+
+let particles = 0;
+
+const canvasSection = document.querySelector(".canvas-section");
+const rows = Math.floor(canvasSection.offsetHeight / sqrSize);
+const cols = Math.floor(canvasSection.offsetWidth / sqrSize);
 let matrix = new Array(rows);
 for (let i = 0; i < rows; i++) {
   let array = new Array(cols).fill(0);
@@ -14,17 +18,14 @@ for (let i = 0; i < rows; i++) {
   let array = new Array(cols).fill(0);
   newMatrix[i] = array;
 }
-let particles = 0;
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = canvasSection.offsetWidth;
+canvas.height = canvasSection.offsetHeight;
 
 const canvasBG = document.getElementById("canvasBackground");
 const ctxBG = canvasBG.getContext("2d");
-canvasBG.width = window.innerWidth;
-canvasBG.height = window.innerHeight;
 
 const infoBox = document.getElementById("info-box");
 const infoParticlesNum = document.getElementById("info-particles-num");
@@ -64,23 +65,19 @@ function drawInit() {
 function showMatrix() {
   let textMatrix = document.getElementById("matrix-info");
   let res = "";
-  res += "-".repeat(cols);
-  res += "<br>";
   for (let row = 0; row < matrix.length; row++) {
     for (let col = 0; col < matrix[row].length; col++) {
       res += matrix[row][col];
     }
     res += "<br>";
   }
-  res += "-".repeat(cols);
-  res += "<br>";
 
   textMatrix.innerHTML = res;
 }
 
 function drawTable() {
-  canvasBG.width = window.innerWidth;
-  canvasBG.height = window.innerHeight;
+  canvasBG.width = canvasSection.offsetWidth;
+  canvasBG.height = canvasSection.offsetHeight;
   // todo resize
   ctxBG.lineWidth = tableLineWidth;
   ctxBG.strokeStyle = "black";
