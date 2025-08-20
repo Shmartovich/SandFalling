@@ -14,6 +14,7 @@ for (let i = 0; i < rows; i++) {
   let array = new Array(cols).fill(0);
   newMatrix[i] = array;
 }
+let particles = 0;
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -25,7 +26,8 @@ const ctxBG = canvasBG.getContext("2d");
 canvasBG.width = window.innerWidth;
 canvasBG.height = window.innerHeight;
 
-const toWaitMs = 256;
+const infoBox = document.getElementById("info-box");
+const infoParticlesNum = document.getElementById("info-particles-num");
 
 function start() {
   if (canvas.getContext) {
@@ -120,6 +122,9 @@ function toggleScrollbars() {
 }
 
 function putSandcornInMatrix(evt) {
+  particles++;
+  infoParticlesNum.innerHTML = particles;
+
   var rect = canvas.getBoundingClientRect();
   var pos = {
     col: Math.floor((evt.clientX - rect.left) / sqrSize),
@@ -127,8 +132,6 @@ function putSandcornInMatrix(evt) {
   };
   if (matrix[pos.row][pos.col] == 0) {
     matrix[pos.row][pos.col] = 1;
-    showMatrix();
-    updatePhysics();
   }
 }
 
@@ -141,27 +144,58 @@ function drawSandcorn(row, col) {
 function updatePhysics() {
   // bottom -> top
   for (let row = rows - 2; row >= 0; row--) {
-    let rowUnder = row + 1;
-    let colLeft = col - 1;
-    let colRight = col + 1;
     for (let col = 0; col < cols; col++) {
       if (matrix[row][col] == 1) {
-        if (matrix[rowUnder][col] == 0) {
-          updateParticle(row, col);
-        } else if (matrix[rowUnder][colLeft] == 0) {
-          updateParticle(row, colLeft);
-        } else if (matrix[rowUnder][colRight] == 0) {
-          updateParticle(row, colRight);
-        }
+        updateParticle(row, col);
       }
     }
   }
+  showMatrix();
   matrix = newMatrix;
 }
 
 function updateParticle(row, col) {
-  newMatrix[row][col] = 0;
-  newMatrix[row + 1][col] = 1;
+  // vertical
+
+  let colLeft = col - 1;
+  let colRight = col + 1;
+  let rowUnder = row + 1;
+  if (matrix[rowUnder][col] == 0) {
+    newMatrix[row][col] = 0;
+    newMatrix[rowUnder][col] = 1;
+    return;
+  }
+  let colDirections = Math.random > 0.5 ? [-1, 1] : [1, -1];
+  for (let colDir of colDirections) {
+    let newCol = col + colDir;
+    if (
+      checkInBounds(rowUnder, newCol) &&
+      checkEmptyDiagonal(rowUnder, newCol)
+    ) {
+      newMatrix[row][col] = 0;
+      newMatrix[rowUnder][newCol] = 1;
+      return;
+    }
+  }
+  function checkInBounds(rowUnder, newCol) {
+    if (rowUnder < rows && newCol > 0 && newCol < cols) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  function checkEmptyDiagonal(rowUnder, newCol) {
+    if (matrix[rowUnder][newCol] == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  if (matrix[rowUnder][colLeft] == 0 && matrix[rowUnder][colRight] == 0) {
+    // randomupdateParticle(row, colLeft);
+  } else if (matrix[rowUnder][colLeft] == 0) {
+    updateParticle(row, colLeft);
+  }
 }
 
 function drawEverySandcorn() {
