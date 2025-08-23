@@ -85,7 +85,7 @@ function drawSandcorn(row, col, color = "black") {
 function updatePhysics() {
   // bottom -> top
   let count = 0;
-  for (let row = rows - 2; row >= 0; row--) {
+  for (let row = rows - 1; row >= 0; row--) {
     for (let col = 0; col < cols; col++) {
       if (matrix[row][col] instanceof Particle) {
         updateParticle(row, col);
@@ -104,15 +104,6 @@ function updatePhysics() {
 function copyOnValueMatrix() {
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
-      // if (newMatrix[i][j]) {
-      //   matrix[i][j] = new Particle(
-      //     newMatrix[i][j].row,
-      //     newMatrix[i][j].col,
-      //     newMatrix[i][j].vSpeed
-      //   );
-      // } else {
-      //   matrix[i][j] = null;
-      // }
       matrix[i][j] = newMatrix[i][j];
     }
   }
@@ -129,6 +120,7 @@ function clearBufferMatrix() {
 function updateParticle(row, col) {
   let particle = matrix[row][col];
   if (particle.vSpeed === 0) {
+    newMatrix[row][col] = particle;
     return;
   }
   let speed = particle.vSpeed;
@@ -209,10 +201,11 @@ function drawEverySandcorn() {
 
 let animationStep = 0;
 function animate() {
-  if (animationStep % 10 === 0) {
-    // Only update physics every 10 frames
-    updatePhysics();
-  }
+  // if (animationStep % 10 === 0) {
+  //   // Only update physics every 10 frames
+  //   updatePhysics();
+  // }
+  updatePhysics();
   drawEverySandcorn();
   animationStep++;
   requestAnimationFrame(animate);
