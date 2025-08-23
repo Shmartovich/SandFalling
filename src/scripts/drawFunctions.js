@@ -1,11 +1,19 @@
-const canvas = document.getElementById("snake-game-canvas");
-const canvas = document.getElementById("snake-game-BG-canvas");
-const ctx = canvas.getContext("2d");
-const rows = 90;
-const cols = 100;
-const sqrSize
+function drawTable(
+  canvas,
+  width,
+  height,
+  lineWidth,
+  strokeStyle,
+  rows,
+  cols,
+  sqrSize
+) {
+  canvas.width = width;
+  canvas.height = height;
+  let ctx = canvas.getContext("2d");
+  ctx.lineWidth = lineWidth;
+  ctx.strokeStyle = strokeStyle;
 
-function drawTable() {
   for (let row = 0; row <= rows; row++) {
     ctx.beginPath();
     ctx.moveTo(0, row * sqrSize);
@@ -20,5 +28,3 @@ function drawTable() {
     ctx.stroke();
   }
 }
-
-drawTable();

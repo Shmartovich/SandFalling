@@ -1,5 +1,14 @@
 function drawInit() {
-  drawTable();
+  drawTable(
+    canvas,
+    canvasSection.offsetWidth,
+    canvasSection.offsetHeight,
+    tableLineWidth,
+    "black",
+    rows,
+    cols,
+    sqrSize
+  );
   drawEverySandcorn();
 }
 
@@ -18,28 +27,6 @@ function showMatrix() {
   }
 
   textMatrix.innerHTML = res;
-}
-
-function drawTable() {
-  canvasBG.width = canvasSection.offsetWidth;
-  canvasBG.height = canvasSection.offsetHeight;
-  // todo resize
-  ctxBG.lineWidth = tableLineWidth;
-  ctxBG.strokeStyle = "black";
-
-  for (let row = 0; row <= rows; row++) {
-    ctxBG.beginPath();
-    ctxBG.moveTo(0, row * sqrSize);
-    ctxBG.lineTo(cols * sqrSize, row * sqrSize);
-    ctxBG.stroke();
-  }
-
-  for (let col = 0; col <= cols; col++) {
-    ctxBG.beginPath();
-    ctxBG.moveTo(col * sqrSize, 0);
-    ctxBG.lineTo(col * sqrSize, rows * sqrSize);
-    ctxBG.stroke();
-  }
 }
 
 function resizeCanvas() {

@@ -23,7 +23,7 @@ canvas.width = canvasSection.offsetWidth;
 canvas.height = canvasSection.offsetHeight;
 
 const canvasBG = document.getElementById("canvasBackground");
-const ctxBG = canvasBG.getContext("2d");
+const ctxBG = canvas.getContext("2d");
 
 const infoBox = document.getElementById("info-box");
 const infoParticlesNum = document.getElementById("info-particles-num");
