@@ -62,7 +62,7 @@ function toggleScrollbars() {
   }
 }
 
-function putParticle(evt) {
+function putParticle(evt, particlesNum) {
   var rect = canvas.getBoundingClientRect();
   var pos = {
     col: Math.floor((evt.clientX - rect.left) / sqrSize),
@@ -70,8 +70,8 @@ function putParticle(evt) {
   };
   if (checkInBounds(pos.row, pos.col) && !matrix[pos.row][pos.col]) {
     matrix[pos.row][pos.col] = new Particle(pos.row, pos.col);
-    particles++;
-    infoParticlesNum.innerHTML = particles;
+    particlesCounter++;
+    infoParticlesNum.innerHTML = particlesCounter;
   }
 }
 
@@ -123,45 +123,28 @@ function updateParticle(row, col) {
     newMatrix[row][col] = particle;
     return;
   }
-  let speed = particle.vSpeed;
+  let vSpeed = particle.vSpeed;
+  let newRow = row + vSpeed;
 
-  // Find how far the particle can actually fall
-  let fallDistance = 1; // At minimum, try to fall 1 space
-  for (
-    let testRow = row + 1;
-    testRow < Math.min(rows, row + 1 + speed);
-    testRow++
-  ) {
-    if (!matrix[testRow][col]) {
-      fallDistance = testRow - row;
-    } else {
-      break; // Hit an obstacle
-    }
-  }
-
-  let newRow = row + fallDistance;
-
-  // If we can fall, do it
-  if (newRow < rows && !matrix[newRow][col]) {
-    let newSpeed = fallDistance === speed ? speed + 1 : 1; // Only increase speed if we fell freely
-    newMatrix[newRow][col] = new Particle(newRow, col, Math.min(newSpeed, 5));
+  // Free fall
+  if (checkInBounds(newRow, col) && checkCollision(newRow, col)) {
+    let newVSpeed = vSpeed + 1;
+    newMatrix[newRow][col] = new Particle(newRow, col, newVSpeed);
     return;
   }
+  // todo
+  let lowestEmptyRow = findLowestEmptyRow(col);
+  newMatrix[lowestEmptyRow][col] = new Particle(lowestEmptyRow, col, 0);
+  return;
+  // Diagonal Fall
+}
 
-  // Try diagonal sliding (left or right)
-  let directions = Math.random() > 0.5 ? [-1, 1] : [1, -1];
-  for (let dir of directions) {
-    let slideCol = col + dir;
-    let slideRow = row + 1;
-
-    if (checkInBounds(slideRow, slideCol) && !matrix[slideRow][slideCol]) {
-      newMatrix[slideRow][slideCol] = new Particle(slideRow, slideCol, 1);
-      return;
-    }
+function checkCollision(newRow, newCol) {
+  if (matrix[newRow][newCol] == null) {
+    return true;
+  } else {
+    return false;
   }
-
-  // Can't move anywhere - stay in place with zero speed
-  newMatrix[row][col] = new Particle(row, col, 0);
 }
 
 function checkInBounds(newRow, newCol) {
@@ -181,8 +164,7 @@ function checkEmptyDiagonal(rowUnder, newCol) {
 
 function findLowestEmptyRow(col) {
   for (let row = rows - 1; row >= 0; row--) {
-    if (!(matrix[row][col] instanceof Particle)) {
-      drawSandcorn(row, col, "red");
+    if (matrix[row][col] == null) {
       return row;
     }
   }

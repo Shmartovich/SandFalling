@@ -1,17 +1,7 @@
-class Particle {
-  constructor(row, col, vSpeed = 1) {
-    this.row = row;
-    this.col = col;
-    this.vSpeed = Math.min(vSpeed, 6);
-  }
-}
-
 let scrollbarsHidden = false;
-
+let particlesCounter = 0;
 const tableLineWidth = 1;
 const sqrSize = 10;
-
-let particles = 0;
 
 const canvasSection = document.querySelector(".canvas-section");
 const rows = Math.floor(canvasSection.offsetHeight / sqrSize);
