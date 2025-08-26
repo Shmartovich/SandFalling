@@ -1,6 +1,15 @@
+const sqrSize = 10;
+const canvasSection = document.querySelector(".canvas-section");
+const rows = Math.floor(canvasSection.offsetHeight / sqrSize);
+const cols = Math.floor(canvasSection.offsetWidth / sqrSize);
+const canvasBG = document.getElementById("canvasBackground");
+
 function drawInit() {
+  document.getElementById("info-rows-num").innerHTML = rows;
+  document.getElementById("info-cols-num").innerHTML = cols;
+
   drawTable(
-    canvas,
+    canvasBG,
     canvasSection.offsetWidth,
     canvasSection.offsetHeight,
     tableLineWidth,
@@ -55,7 +64,7 @@ function putParticle(evt, particlesNum) {
     col: Math.floor((evt.clientX - rect.left) / sqrSize),
     row: Math.floor((evt.clientY - rect.top) / sqrSize),
   };
-  if (checkInBounds(pos.row, pos.col) && !matrix[pos.row][pos.col]) {
+  if (checkBounds(pos.row, pos.col) && !matrix[pos.row][pos.col]) {
     matrix[pos.row][pos.col] = new Particle(pos.row, pos.col);
     particlesCounter++;
     infoParticlesNum.innerHTML = particlesCounter;
@@ -76,19 +85,17 @@ function updatePhysics() {
     for (let col = 0; col < cols; col++) {
       if (matrix[row][col] instanceof Particle) {
         updateParticle(row, col);
-        console.log(`particle # ${count} updated`);
         count++;
       }
     }
   }
-  console.log("after updating all particles");
 
-  copyOnValueMatrix();
+  copyBufferMatrix();
   clearBufferMatrix();
   showMatrix();
 }
 
-function copyOnValueMatrix() {
+function copyBufferMatrix() {
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
       matrix[i][j] = newMatrix[i][j];
@@ -106,55 +113,78 @@ function clearBufferMatrix() {
 
 function updateParticle(row, col) {
   let particle = matrix[row][col];
-  if (particle.vSpeed === 0) {
-    newMatrix[row][col] = particle;
-    return;
-  }
   let vSpeed = particle.vSpeed;
-  let newRow = row + vSpeed;
+  let newRow;
+  let newSpeed;
 
-  // Free fall
-  if (checkInBounds(newRow, col) && checkCollision(newRow, col)) {
-    let newVSpeed = vSpeed + 1;
-    newMatrix[newRow][col] = new Particle(newRow, col, newVSpeed);
-    return;
+  if (vSpeed === 0) {
+    if (!checkBounds(row + 1, col)) {
+      newMatrix[row][col] = particle;
+      return;
+    } else if (checkCollision(row + 1, col)) {
+      newMatrix[row][col] = particle;
+      return;
+    } else {
+      particle.vSpeed++;
+    }
   }
-  // todo
-  let lowestEmptyRow = findLowestEmptyRow(col);
-  newMatrix[lowestEmptyRow][col] = new Particle(lowestEmptyRow, col, 0);
-  return;
+
+  // Free Fall
+  if (checkBounds(newRow, col)) {
+    if (!checkCollision(newRow, col)) {
+      newMatrix[newRow][col] = new Particle(newRow, col, newSpeed);
+      return;
+    } else {
+      while (newRow >= 0) {
+        newRow = newRow - 1;
+        if (!checkCollision(newRow, col)) {
+          newMatrix[newRow][col] = new Particle(newRow, col, 0);
+          return;
+        }
+      }
+    }
+  } else {
+    // set lowest empty spot if OB
+    newRow = rows - 1;
+    while (newRow >= 0) {
+      if (checkBounds(newRow, col) && !checkCollision(newRow, col)) {
+        newMatrix[newRow][col] = new Particle(newRow, col, 0);
+        return;
+      }
+      newRow--;
+    }
+  }
   // Diagonal Fall
 }
-
 function checkCollision(newRow, newCol) {
-  if (matrix[newRow][newCol] == null) {
-    return true;
-  } else {
+  if (!checkBounds(newRow, newCol)) {
+    return undefined;
+  }
+  if (matrix[newRow][newCol] === null) {
     return false;
+  } else {
+    return true;
   }
 }
 
-function checkInBounds(newRow, newCol) {
+function checkBounds(newRow, newCol) {
   if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols) {
     return true;
   } else {
     return false;
   }
 }
-function checkEmptyDiagonal(rowUnder, newCol) {
-  if (matrix[rowUnder][newCol] == 0) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function findLowestEmptyRow(col) {
-  for (let row = rows - 1; row >= 0; row--) {
-    if (matrix[row][col] == null) {
-      return row;
+function setToLowestEmptyRow(col) {
+  let newRow = rows - 1;
+  while (newRow >= 0) {
+    if (checkCollision(newRow, col)) {
+      newRow--;
+    } else {
+      newMatrix[newRow][col] = new Particle(newRow, col, 0);
+      return;
     }
   }
+  return false;
 }
 
 function drawEverySandcorn() {
@@ -170,11 +200,9 @@ function drawEverySandcorn() {
 
 let animationStep = 0;
 function animate() {
-  // if (animationStep % 10 === 0) {
-  //   // Only update physics every 10 frames
-  //   updatePhysics();
-  // }
-  updatePhysics();
+  if (animationStep % 2 === 0) {
+    updatePhysics();
+  }
   drawEverySandcorn();
   animationStep++;
   requestAnimationFrame(animate);
