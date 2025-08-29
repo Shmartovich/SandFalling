@@ -1,24 +1,22 @@
+import * as drawFunctions from "../drawFunctions.js";
 const canvas = document.getElementById("snake-game-canvas");
-const canvas = document.getElementById("snake-game-BG-canvas");
+const canvasBG = document.getElementById("snake-game-BG-canvas");
 const ctx = canvas.getContext("2d");
-const rows = 90;
-const cols = 100;
-const sqrSize
+const rows = 80;
+const cols = 1000;
+const sqrSize = 100;
+const width = 1000;
+const height = 1000;
+const lineWidth = 1;
+const strokeStyle = "red";
 
-function drawTable() {
-  for (let row = 0; row <= rows; row++) {
-    ctx.beginPath();
-    ctx.moveTo(0, row * sqrSize);
-    ctx.lineTo(cols * sqrSize, row * sqrSize);
-    ctx.stroke();
-  }
-
-  for (let col = 0; col <= cols; col++) {
-    ctx.beginPath();
-    ctx.moveTo(col * sqrSize, 0);
-    ctx.lineTo(col * sqrSize, rows * sqrSize);
-    ctx.stroke();
-  }
-}
-
-drawTable();
+drawFunctions.drawTable(
+  canvasBG,
+  width,
+  height,
+  lineWidth,
+  strokeStyle,
+  rows,
+  cols,
+  sqrSize
+);

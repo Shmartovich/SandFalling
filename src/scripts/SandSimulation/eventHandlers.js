@@ -1,23 +1,25 @@
-function addEventListeners() {
+import * as functions from "./functions.js";
+
+export default function addEventListeners(globals) {
   let isHolding = false;
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("resize", functions.resizeCanvas);
 
   const btn = document.getElementById("btn-toggle-scrollbars");
-  btn.addEventListener("click", toggleScrollbars);
+  btn.addEventListener("click", functions.toggleScrollbars);
 
   const btnStep = document.getElementById("btn-toggle-scrollbars");
-  btnStep.addEventListener("click", animate);
+  btnStep.addEventListener("click", functions.animate);
 
-  canvas.addEventListener("mousedown", function (evt) {
+  globals.canvas.addEventListener("mousedown", function (evt) {
     isHolding = true;
     putParticle(evt);
   });
-  canvas.addEventListener("mouseup", function (evt) {
+  globals.canvas.addEventListener("mouseup", function (evt) {
     isHolding = false;
   });
-  canvas.addEventListener("mousemove", function (evt) {
+  globals.canvas.addEventListener("mousemove", function (evt) {
     if (isHolding) {
-      putParticle(evt);
+      functions.putParticle(evt);
     }
   });
 }

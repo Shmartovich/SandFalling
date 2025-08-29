@@ -1,24 +1,43 @@
-const sqrSize = 10;
-const canvasSection = document.querySelector(".canvas-section");
-const rows = Math.floor(canvasSection.offsetHeight / sqrSize);
-const cols = Math.floor(canvasSection.offsetWidth / sqrSize);
-const canvasBG = document.getElementById("canvasBackground");
+import * as drawFunctions from "../drawFunctions.js";
 
-function drawInit() {
+let canvas,
+  ctx,
+  canvasBG,
+  canvasSection,
+  matrix,
+  newMatrix,
+  rows,
+  cols,
+  sqrSize,
+  scrollbarsHidden,
+  particlesCounter,
+  tableLineWidth,
+  infoParticlesNum;
+
+export function drawInit(
+  canvas,
+  width,
+  height,
+  lineWidth,
+  strokeStyle,
+  rows,
+  cols,
+  sqrSize
+) {
   document.getElementById("info-rows-num").innerHTML = rows;
   document.getElementById("info-cols-num").innerHTML = cols;
 
-  drawTable(
-    canvasBG,
-    canvasSection.offsetWidth,
-    canvasSection.offsetHeight,
-    tableLineWidth,
-    "black",
+  drawFunctions.drawTable(
+    canvas,
+    width,
+    height,
+    lineWidth,
+    strokeStyle,
     rows,
     cols,
     sqrSize
   );
-  drawEverySandcorn();
+  drawAllSandcorns();
 }
 
 function showMatrix() {
@@ -38,7 +57,7 @@ function showMatrix() {
   textMatrix.innerHTML = res;
 }
 
-function resizeCanvas() {
+export function resizeCanvas() {
   if (scrollbarsHidden) {
     canvas.width = window.outerWidth;
     canvas.height = window.outerHeight;
@@ -48,7 +67,8 @@ function resizeCanvas() {
   }
   drawInit();
 }
-function toggleScrollbars() {
+
+export function toggleScrollbars() {
   if (!scrollbarsHidden) {
     document.body.style.overflow = "hidden";
     scrollbarsHidden = true;
@@ -58,20 +78,27 @@ function toggleScrollbars() {
   }
 }
 
-function putParticle(evt, particlesNum) {
+export function putParticle(evt, particlesNum = 5) {
   var rect = canvas.getBoundingClientRect();
   var pos = {
     col: Math.floor((evt.clientX - rect.left) / sqrSize),
     row: Math.floor((evt.clientY - rect.top) / sqrSize),
   };
-  if (checkBounds(pos.row, pos.col) && !matrix[pos.row][pos.col]) {
-    matrix[pos.row][pos.col] = new Particle(pos.row, pos.col);
-    particlesCounter++;
-    infoParticlesNum.innerHTML = particlesCounter;
+  while (particlesNum > 0) {
+    let row =
+      pos.row + Math.floor(Math.random() * (Math.random() > 0.5 ? -1 : 1) * 4);
+    let col =
+      pos.col + Math.floor(Math.random() * (Math.random() > 0.5 ? -1 : 1) * 4);
+    if (checkBounds(row, col) && !matrix[pos.row][pos.col]) {
+      matrix[pos.row][pos.col] = new Particle(pos.row, pos.col);
+      particlesCounter++;
+      infoParticlesNum.innerHTML = particlesCounter;
+    }
+    particlesNum--;
   }
 }
 
-function drawSandcorn(row, col, color = "black") {
+function drawSandcorn(ctx, row, col, color = "black") {
   leftPx = col * sqrSize;
   topPx = row * sqrSize;
   ctx.fillStyle = color;
@@ -187,23 +214,38 @@ function setToLowestEmptyRow(col) {
   return false;
 }
 
-function drawEverySandcorn() {
+function drawAllSandcorns() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (let i = 0; i < rows; i++) {
     for (let j = 0; j < cols; j++) {
       if (matrix[i][j]) {
-        drawSandcorn(i, j);
+        drawSandcorn(ctx, i, j);
       }
     }
   }
 }
 
-let animationStep = 0;
-function animate() {
+export function animate() {
   if (animationStep % 2 === 0) {
     updatePhysics();
   }
-  drawEverySandcorn();
+  drawAllSandcorns(ctx);
   animationStep++;
   requestAnimationFrame(animate);
+}
+
+export function initGlobals(globals) {
+  canvas = globals.canvas;
+  ctx = globals.ctx;
+  canvasBG = globals.canvasBG;
+  canvasSection = globals.canvasSection;
+  matrix = globals.matrix;
+  newMatrix = globals.newMatrix;
+  rows = globals.rows;
+  cols = globals.cols;
+  sqrSize = globals.sqrSize;
+  scrollbarsHidden = globals.scrollbarsHidden;
+  particlesCounter = globals.particlesCounter;
+  tableLineWidth = globals.tableLineWidth;
+  infoParticlesNum = globals.infoParticlesNum;
 }

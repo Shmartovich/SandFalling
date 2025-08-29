@@ -1,4 +1,4 @@
-function drawTable(
+export function drawTable(
   canvas,
   width,
   height,
